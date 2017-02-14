@@ -183,6 +183,14 @@ RestClient::Connection::SetNoSignal(bool no) {
   this->noSignal = no;
 }
 
+void RestClient::Connection::SetPeerVerify(bool peerVerify) {
+  this->peerVerify = peerVerify;
+}
+
+void RestClient::Connection::SetHostVerify(bool hostVerify) {
+  this->hostVerify = hostVerify;
+}
+
 /**
  * @brief set username and password for basic auth
  *
@@ -310,6 +318,14 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
   }
   curl_easy_setopt(this->curlHandle, CURLOPT_HTTPHEADER,
       headerList);
+
+  if (!this->hostVerify) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSL_VERIFYHOST, 0L);
+  }
+
+  if (!this->peerVerify) {
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSL_VERIFYPEER, 0L);
+  }
 
   // set basic auth if configured
   if (this->basicAuth.username.length() > 0) {

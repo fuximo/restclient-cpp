@@ -135,6 +135,12 @@ class Connection {
     // set to not use signals
     void SetNoSignal(bool no);
 
+    // set whether the peer certificate should be validated
+    void SetPeerVerify(bool peerVerify);
+
+    // set whether the host certificate should be validated
+    void SetHostVerify(bool hostVerify);
+
     // set whether to follow redirects
     void FollowRedirects(bool follow);
 
@@ -192,6 +198,8 @@ class Connection {
     int timeout;
     bool followRedirects;
     bool noSignal;
+    bool hostVerify;
+    bool peerVerify;
     struct {
       std::string username;
       std::string password;
