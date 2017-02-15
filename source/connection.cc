@@ -19,6 +19,7 @@
 #include "restclient-cpp/helpers.h"
 #include "restclient-cpp/version.h"
 
+
 /**
  * @brief constructor for the Connection object
  *
@@ -295,6 +296,7 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
   std::string headerString;
   CURLcode res = CURLE_OK;
   curl_slist* headerList = NULL;
+  curl_slist* cookieList = NULL;
 
   /** set query URL */
   curl_easy_setopt(this->curlHandle, CURLOPT_URL, url.c_str());
@@ -431,7 +433,17 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
   curl_slist_free_all(headerList);
   // reset curl handle
   curl_easy_reset(this->curlHandle);
-  return ret;
+
+    for (auto& h : ret.headers) {
+        if (h.first == "Set-Cookie") {
+			std::string cookie = h.second;
+			std::size_t pos1 = h.second.find("=");
+		    std::size_t pos2 = h.second.find(";");
+            ret.cookies.insert(std::pair<std::string,std::string>(
+                        cookie.substr(0, pos1), cookie.substr(pos1+1, pos2 - pos1 - 1)));
+        }
+    }
+    return ret;
 }
 
 /**

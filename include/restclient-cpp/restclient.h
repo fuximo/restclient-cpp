@@ -25,6 +25,7 @@ namespace RestClient {
   * public data definitions
   */
 typedef std::map<std::string, std::string> HeaderFields;
+typedef std::map<std::string, std::string> Cookies;
 
 /** @struct Response
   *  @brief This structure represents the HTTP response data
@@ -39,6 +40,7 @@ typedef struct {
   int code;
   std::string body;
   HeaderFields headers;
+  Cookies cookies;
 } Response;
 
 // init and disable functions
