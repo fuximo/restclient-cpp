@@ -291,6 +291,7 @@ RestClient::Response
 RestClient::Connection::performCurlRequest(const std::string& uri) {
   // init return type
   RestClient::Response ret = {};
+  curl_easy_setopt(this->curlHandle, CURLOPT_COOKIEFILE, "");
 
   std::string url = std::string(this->baseUrl + uri);
   std::string headerString;
@@ -434,16 +435,24 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
   // reset curl handle
   curl_easy_reset(this->curlHandle);
 
-    for (auto& h : ret.headers) {
-        if (h.first == "Set-Cookie") {
-			std::string cookie = h.second;
-			std::size_t pos1 = h.second.find("=");
-		    std::size_t pos2 = h.second.find(";");
-            ret.cookies.insert(std::pair<std::string,std::string>(
-                        cookie.substr(0, pos1), cookie.substr(pos1+1, pos2 - pos1 - 1)));
-        }
+    struct curl_slist* cookies;
+    curl_easy_getinfo(this->curlHandle, CURLINFO_COOKIELIST, &cookies);
+    struct curl_slist* i = cookies;
+    while (i) {
+        std::string c = i->data;
+        std::size_t pos1 = c.find('\t', c.find('\t', c.find('\t', c.find('\t', c.find('\t') + 1) + 1) + 1) + 1);
+        std::size_t pos2 = c.find('\t', pos1 + 1);
+        ret.cookies.insert(std::pair<std::string, std::string>(c.substr(pos1 + 1, pos2 - pos1 - 1), c.substr(pos2 + 1)));
+        i = i->next;
     }
+    curl_slist_free_all(cookies);
+
+    this->lastResponse = ret;
     return ret;
+}
+
+RestClient::Response RestClient::Connection::getLastResponse() {
+    return this->lastResponse;
 }
 
 /**

@@ -191,6 +191,8 @@ class Connection {
     RestClient::Response del(const std::string& uri);
     RestClient::Response head(const std::string& uri);
 
+    RestClient::Response getLastResponse();
+
  private:
     CURL* curlHandle;
     std::string baseUrl;
@@ -213,6 +215,7 @@ class Connection {
     std::string keyPassword;
     std::string uriProxy;
     RestClient::Response performCurlRequest(const std::string& uri);
+    RestClient::Response lastResponse;
 };
 };  // namespace RestClient
 
