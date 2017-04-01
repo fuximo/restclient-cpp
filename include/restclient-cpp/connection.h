@@ -22,6 +22,8 @@
  */
 namespace RestClient {
 
+typedef std::map<std::string, std::string> PostData;
+
 /**
   * @brief Connection object for advanced usage
   */
@@ -186,12 +188,21 @@ class Connection {
     RestClient::Response get(const std::string& uri);
     RestClient::Response post(const std::string& uri,
                               const std::string& data);
+    RestClient::Response post(const std::string& url,
+                              const RestClient::PostData& data);
     RestClient::Response put(const std::string& uri,
                              const std::string& data);
     RestClient::Response del(const std::string& uri);
     RestClient::Response head(const std::string& uri);
 
     RestClient::Response getLastResponse();
+
+    // Cookie handler methods
+    void setCookies(const Cookies& cookies);
+    const Cookies& getCookies()const;
+    void setCookie(std::string key, std::string value);
+    std::string getCookie(std::string key)const;
+    void clearCookies();
 
  private:
     CURL* curlHandle;
@@ -216,6 +227,7 @@ class Connection {
     std::string uriProxy;
     RestClient::Response performCurlRequest(const std::string& uri);
     RestClient::Response lastResponse;
+    Cookies cookies;
 };
 };  // namespace RestClient
 

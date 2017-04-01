@@ -20,14 +20,32 @@
 #include "restclient-cpp/version.h"
 
 
+static std::string cookies_to_string(const RestClient::Cookies& cookies){
+
+    std::string retv;
+    for(auto entry:cookies){
+        retv += entry.first + "=" + entry.second + "; ";
+    }
+    return retv;
+}
+
+static std::string postdata_to_string(CURL* curlHandle, const RestClient::PostData& data){
+    std::string retv;
+    for(auto entry:data){
+        char* value = curl_easy_escape(curlHandle, entry.second.c_str(), entry.second.size());
+        retv += entry.first + "=" + value + "&";
+        curl_free(value);
+    }
+    return retv;
+}
+
 /**
  * @brief constructor for the Connection object
  *
  * @param baseUrl - base URL for the connection to use
  *
  */
-RestClient::Connection::Connection(const std::string& baseUrl)
-                               : lastRequest(), headerFields() {
+RestClient::Connection::Connection(const std::string& baseUrl) {
   this->curlHandle = curl_easy_init();
   if (!this->curlHandle) {
     throw std::runtime_error("Couldn't initialize curl handle");
@@ -393,6 +411,12 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
                      1L);
   }
 
+  // set cookies
+  if(cookies.empty() == false){
+    std::string cookie_data = cookies_to_string(cookies);
+    curl_easy_setopt(this->curlHandle, CURLOPT_COOKIE, cookie_data.c_str());
+  }
+
   res = curl_easy_perform(this->curlHandle);
   if (res != CURLE_OK) {
     switch (res) {
@@ -485,6 +509,22 @@ RestClient::Connection::post(const std::string& url,
 
   return this->performCurlRequest(url);
 }
+
+
+RestClient::Response
+RestClient::Connection::post(const std::string& url,
+                             const RestClient::PostData& data) {
+
+  std::string pdata = postdata_to_string(this->curlHandle, data);
+
+  /** Now specify we want to POST data */
+  curl_easy_setopt(this->curlHandle, CURLOPT_POST, 1L);
+  /** set post fields */
+  curl_easy_setopt(this->curlHandle, CURLOPT_POSTFIELDS, pdata.c_str());
+  curl_easy_setopt(this->curlHandle, CURLOPT_POSTFIELDSIZE, pdata.size());
+
+  return this->performCurlRequest(url);
+}
 /**
  * @brief HTTP PUT method
  *
@@ -550,4 +590,26 @@ RestClient::Connection::head(const std::string& url) {
     curl_easy_setopt(this->curlHandle, CURLOPT_NOBODY, 1L);
 
     return this->performCurlRequest(url);
+}
+
+
+// Cookie handler methods
+void RestClient::Connection::setCookies(const Cookies& cookies){
+    this->cookies = cookies;
+}
+
+const RestClient::Cookies& RestClient::Connection::getCookies()const{
+    return cookies;
+}
+
+void RestClient::Connection::setCookie(std::string key, std::string value){
+    cookies[key] = value;
+}
+
+std::string RestClient::Connection::getCookie(std::string key)const{
+    return cookies.at(key);
+}
+
+void RestClient::Connection::clearCookies(){
+    this->cookies.clear();
 }
