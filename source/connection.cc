@@ -454,6 +454,11 @@ RestClient::Connection::performCurlRequest(const std::string& uri) {
                     &this->lastRequest.redirectTime);
   curl_easy_getinfo(this->curlHandle, CURLINFO_REDIRECT_COUNT,
                     &this->lastRequest.redirectCount);
+  char* effectiveUrl;
+  curl_easy_getinfo(this->curlHandle, CURLINFO_EFFECTIVE_URL,
+                    &effectiveUrl);
+  lastRequest.effectiveUrl = effectiveUrl;
+
   // free header list
   curl_slist_free_all(headerList);
   // reset curl handle

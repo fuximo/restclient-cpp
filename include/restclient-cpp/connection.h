@@ -67,6 +67,7 @@ class Connection {
         double preTransferTime;
         double startTransferTime;
         double redirectTime;
+        std::string effectiveUrl;
         int redirectCount;
       } RequestInfo;
     /**
