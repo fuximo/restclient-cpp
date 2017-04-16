@@ -45,7 +45,8 @@ static std::string postdata_to_string(CURL* curlHandle, const RestClient::PostDa
  * @param baseUrl - base URL for the connection to use
  *
  */
-RestClient::Connection::Connection(const std::string& baseUrl) {
+RestClient::Connection::Connection(const std::string& baseUrl)
+    :hostVerify(true),peerVerify(true) {
   this->curlHandle = curl_easy_init();
   if (!this->curlHandle) {
     throw std::runtime_error("Couldn't initialize curl handle");
